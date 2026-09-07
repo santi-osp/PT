@@ -43,7 +43,20 @@ public sealed record UpdateResidentialCustomerRequest(
     Guid CenterId,
     AddressRequest? Address);
 
-public sealed record AddressResponse(Guid NeighborhoodId, bool IsRural, string FormattedAddress);
+public sealed record AddressResponse(
+    Guid NeighborhoodId,
+    bool IsRural,
+    string? RuralAddress,
+    string? MainRoadType,
+    string? MainRoadNumber,
+    string? MainRoadLetter,
+    string? MainRoadCardinality,
+    string? SecondaryRoadNumber1,
+    string? SecondaryRoadLetter,
+    string? SecondaryRoadCardinality1,
+    string? SecondaryRoadNumber2,
+    string? SecondaryRoadCardinality2,
+    string FormattedAddress);
 
 public sealed record ResidentialCustomerResponse(
     Guid Id, string Code, Treatment Treatment, string BusinessName, string ExtendedLegalName,
@@ -58,9 +71,20 @@ public sealed record ResidentialCustomerResponse(
         customer.Email, customer.DocumentType, customer.DocumentNumber, customer.VerificationDigit,
         customer.TaxClass, customer.PaymentCondition, customer.Stratum, customer.CenterId, customer.IsBlocked,
         customer.BlockedAt, customer.IsBlocked ? "Cliente bloqueado" : null,
-        new(customer.Address.NeighborhoodId, customer.Address.IsRural, customer.Address.FormattedAddress),
+        new(customer.Address.NeighborhoodId, customer.Address.IsRural, customer.Address.RuralAddress,
+            customer.Address.MainRoadType, customer.Address.MainRoadNumber, customer.Address.MainRoadLetter,
+            customer.Address.MainRoadCardinality, customer.Address.SecondaryRoadNumber1,
+            customer.Address.SecondaryRoadLetter, customer.Address.SecondaryRoadCardinality1,
+            customer.Address.SecondaryRoadNumber2, customer.Address.SecondaryRoadCardinality2,
+            customer.Address.FormattedAddress),
         customer.CreatedAt, customer.UpdatedAt);
 }
 
-public sealed record NeighborhoodResponse(Guid Id, string Name);
+public sealed record NeighborhoodResponse(
+    Guid Id,
+    string Name,
+    string Municipality,
+    string Department,
+    string Country,
+    string TransportZone);
 public sealed record CenterResponse(Guid Id, string Code, string Name);

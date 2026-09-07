@@ -35,7 +35,7 @@ public sealed class CreateResidentialCustomerHandlerTests
     private sealed class Neighborhoods : INeighborhoodRepository
     {
         public Task<bool> ExistsAsync(Guid id, CancellationToken token) => Task.FromResult(true);
-        public Task<IReadOnlyList<Neighborhood>> SearchAsync(string? query, CancellationToken token) => Task.FromResult<IReadOnlyList<Neighborhood>>([]);
+        public Task<IReadOnlyList<NeighborhoodLookup>> SearchAsync(string? query, CancellationToken token) => Task.FromResult<IReadOnlyList<NeighborhoodLookup>>([]);
     }
     private sealed class Modern : IModernChannelCustomerRepository
     {

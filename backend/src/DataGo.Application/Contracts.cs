@@ -14,6 +14,14 @@ public interface IResidentialCustomerRepository
 
 public enum CustomerStatusFilter { All, Active, Blocked }
 
+public sealed record NeighborhoodLookup(
+    Guid Id,
+    string Name,
+    string Municipality,
+    string Department,
+    string Country,
+    string TransportZone);
+
 public interface ICenterRepository
 {
     Task<bool> ExistsActiveAsync(Guid id, CancellationToken cancellationToken);
@@ -23,7 +31,7 @@ public interface ICenterRepository
 public interface INeighborhoodRepository
 {
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken);
-    Task<IReadOnlyList<Neighborhood>> SearchAsync(string? query, CancellationToken cancellationToken);
+    Task<IReadOnlyList<NeighborhoodLookup>> SearchAsync(string? query, CancellationToken cancellationToken);
 }
 
 public interface IModernChannelCustomerRepository

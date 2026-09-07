@@ -116,16 +116,17 @@ internal sealed class NeighborhoodRepository(NpgsqlDataSource dataSource) : INei
         return (bool)(await command.ExecuteScalarAsync(cancellationToken) ?? false);
     }
 
-    public async Task<IReadOnlyList<Neighborhood>> SearchAsync(string? query, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<NeighborhoodLookup>> SearchAsync(string? query, CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(
-            "SELECT id, name FROM fn_neighborhoods_search(@p_query)");
+            "SELECT id, name, municipality, department, country, transport_zone FROM fn_neighborhoods_search(@p_query)");
         command.Parameters.Add(new NpgsqlParameter("p_query", NpgsqlDbType.Text)
             { Value = string.IsNullOrWhiteSpace(query) ? DBNull.Value : query.Trim() });
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        var neighborhoods = new List<Neighborhood>();
+        var neighborhoods = new List<NeighborhoodLookup>();
         while (await reader.ReadAsync(cancellationToken))
-            neighborhoods.Add(new Neighborhood(reader.GetGuid(0), Guid.Empty, Guid.Empty, reader.GetString(1)));
+            neighborhoods.Add(new NeighborhoodLookup(reader.GetGuid(0), reader.GetString(1), reader.GetString(2),
+                reader.GetString(3), reader.GetString(4), reader.GetString(5)));
         return neighborhoods;
     }
 }

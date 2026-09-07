@@ -12,6 +12,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => policy
+    .WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [])
+    .AllowAnyHeader()
+    .AllowAnyMethod()));
 builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<CreateResidentialCustomerHandler>();
@@ -29,6 +33,7 @@ app.UseMiddleware<ApiExceptionMiddleware>();
 app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseCors("Frontend");
 
 app.MapControllers();
 

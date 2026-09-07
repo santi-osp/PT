@@ -7,6 +7,7 @@ DataGo is a technical-exercise monorepo for managing residential customers. The 
 - ASP.NET Core 10, C# 14, Swagger/OpenAPI
 - EF Core 10.0.8, Npgsql 10.0.3, and PostgreSQL stored procedures/functions
 - PostgreSQL (Neon for the shared development database)
+- Angular 21 standalone frontend with Reactive Forms
 - xUnit focused domain/application tests
 
 ```text
@@ -17,7 +18,7 @@ backend/
   src/DataGo.Api
   tests/
 docs/
-frontend/                 # Goal 3
+frontend/                 # Angular operations UI
 ```
 
 See [architecture](docs/architecture.md), [database model](docs/database.md), and [decision log](docs/decisions.md).
@@ -53,6 +54,24 @@ dotnet run --project .\backend\src\DataGo.Api\DataGo.Api.csproj
 ```
 
 Swagger UI is available at `/swagger`; health is available at `/api/health`.
+
+## Run the full stack
+
+Use two terminals from the repository root. The Neon connection remains in .NET user-secrets.
+
+```powershell
+# Terminal 1 — API at http://localhost:5124
+dotnet run --project .\backend\src\DataGo.Api\DataGo.Api.csproj
+
+# Terminal 2 — Angular at http://localhost:4200
+cd .\frontend
+npm install
+npm start
+```
+
+The development frontend targets `http://localhost:5124/api`. Production uses the same-origin `/api` placeholder so Goal 4 can inject the deployed API route without embedding a fictitious hostname.
+
+Build the frontend with `npm run build` from `frontend/`.
 
 ## Endpoints
 

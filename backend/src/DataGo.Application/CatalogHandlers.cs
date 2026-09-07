@@ -9,5 +9,6 @@ public sealed class GetCentersHandler(ICenterRepository centers)
 public sealed class SearchNeighborhoodsHandler(INeighborhoodRepository neighborhoods)
 {
     public async Task<IReadOnlyList<NeighborhoodResponse>> HandleAsync(string? query, CancellationToken cancellationToken) =>
-        (await neighborhoods.SearchAsync(query, cancellationToken)).Select(x => new NeighborhoodResponse(x.Id, x.Name)).ToList();
+        (await neighborhoods.SearchAsync(query, cancellationToken)).Select(x =>
+            new NeighborhoodResponse(x.Id, x.Name, x.Municipality, x.Department, x.Country, x.TransportZone)).ToList();
 }

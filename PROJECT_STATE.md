@@ -1,11 +1,11 @@
 # PROJECT_STATE
 
 - **Backend:** COMPLETE. ASP.NET Core 10 Clean Architecture implementation and real persistence smoke are validated.
-- **Frontend:** Not started; intentionally outside Goal 2.
-- **Database:** NEON CONNECTED. EF Core 10 + Npgsql 10.0.3; `InitialCreate` and `AddResidentialCustomerStoredRoutines` are applied. Three command procedures and six functions are verified in `pg_proc`.
-- **CRUD:** CREATE, READ, SEARCH, UPDATE, and RETIRE implemented. Blocked customers remain visible and may be filtered with `status`.
-- **Endpoints:** POST/GET/PUT residential customers, PATCH retire, catalogs, health, and Swagger.
-- **Tests:** 18 focused cases passing. Post-migration Neon smoke passed stored-routine create/read/search/update/retire, blocked read, blocked PUT 409, and repeated retire 409.
-- **Known issues:** None known for the Goal 2 backend scope.
-- **Deployment:** Not started; configuration is environment-driven and ready for a later Render goal.
-- **Next:** GOAL 3 — Angular UI + complete API integration.
+- **Frontend:** COMPLETE for Goal 3. Angular 21 standalone UI includes list/search/status filters, create, detail, edit, logical retirement, responsive cards, loading/error/empty states, confirmations, and toasts.
+- **Database:** NEON CONNECTED. EF Core 10 + Npgsql 10.0.3; all three migrations are applied, including the geography-aware neighborhood catalog routine.
+- **CRUD:** CREATE, READ, SEARCH, UPDATE, and RETIRE implemented end to end. Blocked customers remain visible and cannot be mutated.
+- **Endpoints:** POST/GET/PUT residential customers, PATCH retire, enriched catalogs, health, and Swagger.
+- **Tests:** 18 backend cases passing. Angular production build passes. Browser full-stack smoke passed create/read/search/update/retire against Neon plus blocked-route protection at desktop and mobile widths.
+- **Known issues:** None known for the Goal 3 acceptance scope.
+- **Deployment:** Not started; configuration is environment-driven and ready for Render/Cloudflare.
+- **Next:** GOAL 4 — Render + Cloudflare + CI/CD + production smoke.
