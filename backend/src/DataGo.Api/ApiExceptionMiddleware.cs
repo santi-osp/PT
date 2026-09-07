@@ -22,6 +22,14 @@ public sealed class ApiExceptionMiddleware(RequestDelegate next, ILogger<ApiExce
                 ConflictException => (StatusCodes.Status409Conflict, "Conflicto", exception.Message),
                 AssistantProviderException provider when provider.Code == "not_configured" =>
                     (StatusCodes.Status503ServiceUnavailable, "Asistente no configurado", provider.Message),
+                AssistantProviderException provider when provider.Code == "invalid_response" =>
+                    (StatusCodes.Status502BadGateway, "Respuesta de IA inválida", provider.Message),
+                AssistantProviderException provider when provider.Code == "invalid_request" =>
+                    (StatusCodes.Status502BadGateway, "Configuración de IA rechazada", provider.Message),
+                AssistantProviderException provider when provider.Code is "invalid_credentials" or "quota_exhausted" =>
+                    (StatusCodes.Status503ServiceUnavailable, "Configuración de OpenRouter no disponible", provider.Message),
+                AssistantProviderException provider when provider.Code == "rate_limited" =>
+                    (StatusCodes.Status503ServiceUnavailable, "Límite temporal de OpenRouter", provider.Message),
                 AssistantProviderException provider =>
                     (StatusCodes.Status503ServiceUnavailable, "Proveedor de IA no disponible", provider.Message),
                 _ => (StatusCodes.Status500InternalServerError, "Error interno", "Ocurrió un error inesperado")

@@ -84,7 +84,7 @@ internal sealed class OpenRouterAssistantModel(HttpClient httpClient, OpenRouter
                 message.Content = JsonContent.Create(BuildPayload(request, attempt > 0));
                 using var response = await httpClient.SendAsync(message, cancellationToken);
                 if (!response.IsSuccessStatusCode)
-                    throw new AssistantProviderException("unavailable", "El proveedor de IA no está disponible temporalmente.");
+                    throw await CreateProviderExceptionAsync(response, cancellationToken);
                 var envelope = await response.Content.ReadFromJsonAsync<OpenRouterResponse>(JsonOptions, cancellationToken);
                 var content = envelope?.Choices?.FirstOrDefault()?.Message?.Content;
                 if (TryParse(content, out var interpretation)) return interpretation!;
@@ -116,8 +116,7 @@ internal sealed class OpenRouterAssistantModel(HttpClient httpClient, OpenRouter
         {
             type = "json_schema",
             json_schema = new { name = "datago_assistant_interpretation", strict = true, schema = Schema }
-        },
-        provider = new { require_parameters = true }
+        }
     };
 
     private static readonly object Schema = new
@@ -157,6 +156,33 @@ internal sealed class OpenRouterAssistantModel(HttpClient httpClient, OpenRouter
             return result is not null && Enum.IsDefined(result.Intent);
         }
         catch (JsonException) { return false; }
+    }
+
+    private static async Task<AssistantProviderException> CreateProviderExceptionAsync(
+        HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        var status = (int)response.StatusCode;
+        var providerMessage = "";
+        try
+        {
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            using var json = JsonDocument.Parse(body);
+            providerMessage = json.RootElement.TryGetProperty("error", out var error) &&
+                error.TryGetProperty("message", out var message) ? message.GetString() ?? "" : "";
+        }
+        catch (JsonException) { }
+
+        var suffix = string.IsNullOrWhiteSpace(providerMessage)
+            ? $" (HTTP {status})."
+            : $" (HTTP {status}: {providerMessage[..Math.Min(providerMessage.Length, 240)]}).";
+        return status switch
+        {
+            401 or 403 => new("invalid_credentials", "OpenRouter rechazó la credencial configurada" + suffix),
+            402 => new("quota_exhausted", "OpenRouter no tiene crédito disponible" + suffix),
+            429 => new("rate_limited", "OpenRouter limitó temporalmente las solicitudes" + suffix),
+            400 or 404 or 422 => new("invalid_request", "OpenRouter rechazó la configuración de la solicitud" + suffix),
+            _ => new("unavailable", "OpenRouter no está disponible temporalmente" + suffix)
+        };
     }
 
     private sealed record OpenRouterResponse(IReadOnlyList<Choice>? Choices);
