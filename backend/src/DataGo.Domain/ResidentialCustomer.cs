@@ -69,8 +69,8 @@ public sealed class ResidentialCustomer
         DateTimeOffset now)
     {
         if (!Enum.IsDefined(treatment)) throw new DomainValidationException("El tratamiento es obligatorio");
-        var business = CustomerInputRules.Required(businessName, "La razón social");
-        var legalName = CustomerInputRules.Required(extendedLegalName, "El nombre legal extendido");
+        var business = CustomerInputRules.Required(businessName, "El nombre de negocio");
+        var legalName = CustomerInputRules.Required(extendedLegalName, "La razón social extendida");
         var normalizedPhone = CustomerInputRules.Optional(phone, "El teléfono");
         var normalizedMobile = CustomerInputRules.Optional(mobilePhone, "El celular");
         if (normalizedPhone is null && normalizedMobile is null) throw new DomainValidationException("Debe indicar teléfono o celular");
@@ -122,7 +122,7 @@ public sealed class ResidentialCustomer
         if (centerId == Guid.Empty) throw new DomainValidationException("El centro es obligatorio");
         if (stratum is < 1 or > 6) throw new DomainValidationException("El estrato debe estar entre 1 y 6");
 
-        BusinessName = CustomerInputRules.Required(businessName, "La razón social");
+        BusinessName = CustomerInputRules.Required(businessName, "El nombre de negocio");
         if (Treatment == Treatment.Empresa)
         {
             var suppliedFirst = string.IsNullOrWhiteSpace(firstNames) ? null : CustomerInputRules.NameComponents(firstNames, "El nombre legal", true);

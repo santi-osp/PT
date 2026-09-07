@@ -86,3 +86,42 @@ export interface Neighborhood {
 
 export interface Center { id: string; code: string; name: string }
 export interface ProblemDetails { status?: number; title?: string; detail?: string; errors?: Record<string, string[]> }
+
+export type AssistantResponseType = 'Text' | 'CustomerList' | 'CustomerDetail' | 'Count' | 'Confirmation' | 'Clarification' | 'Error';
+export type AssistantIntent = 'HELP' | 'SEARCH_CUSTOMERS' | 'COUNT_CUSTOMERS' | 'GET_CUSTOMER' | 'CREATE_CUSTOMER' | 'UPDATE_CUSTOMER' | 'RETIRE_CUSTOMER' | 'UNKNOWN';
+
+export interface AssistantFilters {
+  searchText?: string | null;
+  status?: string | null;
+  neighborhood?: string | null;
+  center?: string | null;
+  stratum?: number | null;
+  treatment?: string | null;
+  documentType?: string | null;
+}
+
+export interface AssistantContext { customerId?: string | null; filters?: AssistantFilters | null }
+export interface AssistantChangePreview { field: string; previousValue: string | null; proposedValue: string | null }
+export interface PendingAssistantAction {
+  token: string;
+  actionType: AssistantIntent;
+  targetCustomerId: string;
+  customerCode: string;
+  customerName: string;
+  document: string;
+  summary: string;
+  changes: AssistantChangePreview[];
+  expiresAt: string;
+}
+export interface AssistantCustomerCard { customer: Customer; neighborhood: string }
+export interface AssistantMessageRequest { message: string; context?: AssistantContext | null }
+export interface AssistantMessageResponse {
+  responseType: AssistantResponseType;
+  message: string;
+  customers?: AssistantCustomerCard[] | null;
+  count?: number | null;
+  isTruncated: boolean;
+  pendingAction?: PendingAssistantAction | null;
+  context?: AssistantContext | null;
+  openCreateForm: boolean;
+}

@@ -28,19 +28,37 @@ internal sealed class ResidentialCustomerRepository(NpgsqlDataSource dataSource)
     public Task<ResidentialCustomer?> GetForUpdateAsync(Guid id, CancellationToken cancellationToken) =>
         ReadOneAsync(id, cancellationToken);
 
-    public async Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(string? search, CustomerStatusFilter status,
+    public async Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(SearchResidentialCustomerCriteria criteria,
         CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(
-            "SELECT result::text FROM fn_residential_customer_search(@p_search, @p_status)");
-        command.Parameters.Add(new NpgsqlParameter("p_search", NpgsqlDbType.Text)
-            { Value = string.IsNullOrWhiteSpace(search) ? DBNull.Value : search.Trim() });
-        command.Parameters.AddWithValue("p_status", NpgsqlDbType.Text, status.ToString().ToLowerInvariant());
+            "SELECT result::text FROM fn_residential_customer_search_advanced(@p_search, @p_status, @p_neighborhood, @p_center, @p_stratum, @p_treatment, @p_document_type)");
+        AddSearchParameters(command, criteria);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         var customers = new List<ResidentialCustomer>();
         while (await reader.ReadAsync(cancellationToken))
             customers.Add(RoutineCustomerMapper.Deserialize(reader.GetString(0)));
         return customers;
+    }
+
+    public async Task<int> CountAsync(SearchResidentialCustomerCriteria criteria, CancellationToken cancellationToken)
+    {
+        await using var command = dataSource.CreateCommand(
+            "SELECT fn_residential_customer_count_advanced(@p_search, @p_status, @p_neighborhood, @p_center, @p_stratum, @p_treatment, @p_document_type)");
+        AddSearchParameters(command, criteria);
+        return Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken));
+    }
+
+    private static void AddSearchParameters(NpgsqlCommand command, SearchResidentialCustomerCriteria criteria)
+    {
+        command.Parameters.Add(new NpgsqlParameter("p_search", NpgsqlDbType.Text)
+            { Value = string.IsNullOrWhiteSpace(criteria.SearchText) ? DBNull.Value : criteria.SearchText.Trim() });
+        command.Parameters.AddWithValue("p_status", NpgsqlDbType.Text, criteria.Status.ToString().ToLowerInvariant());
+        command.Parameters.AddWithValue("p_neighborhood", NpgsqlDbType.Uuid, (object?)criteria.NeighborhoodId ?? DBNull.Value);
+        command.Parameters.AddWithValue("p_center", NpgsqlDbType.Uuid, (object?)criteria.CenterId ?? DBNull.Value);
+        command.Parameters.AddWithValue("p_stratum", NpgsqlDbType.Smallint, (object?)criteria.Stratum ?? DBNull.Value);
+        command.Parameters.AddWithValue("p_treatment", NpgsqlDbType.Integer, criteria.Treatment.HasValue ? (object)(int)criteria.Treatment.Value : DBNull.Value);
+        command.Parameters.AddWithValue("p_document_type", NpgsqlDbType.Integer, criteria.DocumentType.HasValue ? (object)(int)criteria.DocumentType.Value : DBNull.Value);
     }
 
     public async Task UpdateAsync(ResidentialCustomer customer, CancellationToken cancellationToken)

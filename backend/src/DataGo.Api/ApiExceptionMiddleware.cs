@@ -20,6 +20,10 @@ public sealed class ApiExceptionMiddleware(RequestDelegate next, ILogger<ApiExce
                 DomainConflictException => (StatusCodes.Status409Conflict, "Conflicto", exception.Message),
                 NotFoundException => (StatusCodes.Status404NotFound, "Recurso no encontrado", exception.Message),
                 ConflictException => (StatusCodes.Status409Conflict, "Conflicto", exception.Message),
+                AssistantProviderException provider when provider.Code == "not_configured" =>
+                    (StatusCodes.Status503ServiceUnavailable, "Asistente no configurado", provider.Message),
+                AssistantProviderException provider =>
+                    (StatusCodes.Status503ServiceUnavailable, "Proveedor de IA no disponible", provider.Message),
                 _ => (StatusCodes.Status500InternalServerError, "Error interno", "Ocurrió un error inesperado")
             };
             if (status == 500) logger.LogError(exception, "Unhandled request error");

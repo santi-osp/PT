@@ -52,8 +52,24 @@ public sealed class GetResidentialCustomerHandler(IResidentialCustomerRepository
 
 public sealed class SearchResidentialCustomersHandler(IResidentialCustomerRepository customers)
 {
-    public async Task<IReadOnlyList<ResidentialCustomerResponse>> HandleAsync(string? search, CustomerStatusFilter status, CancellationToken cancellationToken) =>
-        (await customers.SearchAsync(search, status, cancellationToken)).Select(ResidentialCustomerResponse.From).ToList();
+    public Task<IReadOnlyList<ResidentialCustomerResponse>> HandleAsync(string? search, CustomerStatusFilter status, CancellationToken cancellationToken) =>
+        HandleAsync(new(search, status), cancellationToken);
+
+    public async Task<IReadOnlyList<ResidentialCustomerResponse>> HandleAsync(SearchResidentialCustomerCriteria criteria, CancellationToken cancellationToken)
+    {
+        if (!Enum.IsDefined(criteria.Status) || criteria.Stratum is < 1 or > 6 ||
+            (criteria.Treatment.HasValue && !Enum.IsDefined(criteria.Treatment.Value)) ||
+            (criteria.DocumentType.HasValue && !Enum.IsDefined(criteria.DocumentType.Value)))
+            throw new DomainValidationException("Los filtros de búsqueda no son válidos.");
+        return (await customers.SearchAsync(criteria with { SearchText = criteria.SearchText?.Trim() }, cancellationToken))
+            .Select(ResidentialCustomerResponse.From).ToList();
+    }
+}
+
+public sealed class CountResidentialCustomersHandler(IResidentialCustomerRepository customers)
+{
+    public Task<int> HandleAsync(SearchResidentialCustomerCriteria criteria, CancellationToken cancellationToken) =>
+        customers.CountAsync(criteria, cancellationToken);
 }
 
 public sealed class UpdateResidentialCustomerHandler(

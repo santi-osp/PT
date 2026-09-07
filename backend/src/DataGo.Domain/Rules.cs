@@ -25,15 +25,32 @@ public sealed record ParsedName(string FullName, string FirstNames, string LastN
 
 public static class NameParser
 {
-    // Assumption for the exercise: for four or more tokens, the last two are surnames.
+    // Particles attach to the next word; with three or more components the last two
+    // are surnames. Ambiguous three-component names remain editable after creation.
+    private static readonly HashSet<string> Particles = new(StringComparer.OrdinalIgnoreCase)
+        { "de", "del", "la", "las", "los" };
     public static ParsedName Parse(string legalName)
     {
-        var tokens = legalName.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var tokens = Regex.Split(legalName.Trim(), @"\s+").Where(x => x.Length > 0).ToArray();
         if (tokens.Length == 0) throw new DomainValidationException("El nombre legal extendido es obligatorio");
 
-        var firstCount = tokens.Length switch { 1 => 1, 2 => 1, 3 => 2, _ => tokens.Length - 2 };
-        var first = tokens[..firstCount];
-        var last = tokens[firstCount..];
+        var components = new List<string>();
+        var pending = new List<string>();
+        foreach (var token in tokens)
+        {
+            pending.Add(token);
+            if (Particles.Contains(token)) continue;
+            components.Add(string.Join(' ', pending));
+            pending.Clear();
+        }
+        if (pending.Count > 0)
+        {
+            if (components.Count == 0) components.Add(string.Join(' ', pending));
+            else components[^1] += " " + string.Join(' ', pending);
+        }
+        var firstCount = components.Count <= 2 ? 1 : components.Count - 2;
+        var first = components.Take(firstCount);
+        var last = components.Skip(firstCount);
         return new(string.Join(' ', tokens), string.Join(", ", first), string.Join(", ", last));
     }
 }

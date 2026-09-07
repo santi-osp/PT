@@ -1,4 +1,5 @@
 using DataGo.Application;
+using DataGo.Domain;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DataGo.Api.Controllers;
@@ -22,8 +23,11 @@ public sealed class ResidentialCustomersController(
 
     [HttpGet]
     public Task<IReadOnlyList<ResidentialCustomerResponse>> Search([FromQuery] string? search,
-        [FromQuery] CustomerStatusFilter status = CustomerStatusFilter.All, CancellationToken cancellationToken = default) =>
-        searchHandler.HandleAsync(search, status, cancellationToken);
+        [FromQuery] CustomerStatusFilter status = CustomerStatusFilter.All,
+        [FromQuery] Guid? neighborhoodId = null, [FromQuery] Guid? centerId = null,
+        [FromQuery] short? stratum = null, [FromQuery] Treatment? treatment = null,
+        [FromQuery] DocumentType? documentType = null, CancellationToken cancellationToken = default) =>
+        searchHandler.HandleAsync(new(search, status, neighborhoodId, centerId, stratum, treatment, documentType), cancellationToken);
 
     [HttpGet("{id:guid}")]
     public Task<ResidentialCustomerResponse> Get(Guid id, CancellationToken cancellationToken) =>

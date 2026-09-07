@@ -23,7 +23,8 @@ public sealed class CreateResidentialCustomerHandlerTests
         public Task AddAsync(ResidentialCustomer customer, CancellationToken token) => Task.CompletedTask;
         public Task<ResidentialCustomer?> GetAsync(Guid id, CancellationToken token) => Task.FromResult<ResidentialCustomer?>(null);
         public Task<ResidentialCustomer?> GetForUpdateAsync(Guid id, CancellationToken token) => Task.FromResult<ResidentialCustomer?>(null);
-        public Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(string? search, CustomerStatusFilter status, CancellationToken token) => Task.FromResult<IReadOnlyList<ResidentialCustomer>>([]);
+        public Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(SearchResidentialCustomerCriteria criteria, CancellationToken token) => Task.FromResult<IReadOnlyList<ResidentialCustomer>>([]);
+        public Task<int> CountAsync(SearchResidentialCustomerCriteria criteria, CancellationToken token) => Task.FromResult(0);
         public Task UpdateAsync(ResidentialCustomer customer, CancellationToken token) => Task.CompletedTask;
         public Task RetireAsync(ResidentialCustomer customer, CancellationToken token) => Task.CompletedTask;
     }

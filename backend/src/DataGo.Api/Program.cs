@@ -18,13 +18,23 @@ builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => poli
     .AllowAnyMethod()));
 builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddAssistantInfrastructure(new OpenRouterOptions(
+    builder.Configuration["OpenRouter:ApiKey"]
+        ?? Environment.GetEnvironmentVariable("OPENROUTER_API_KEY")
+        ?? Environment.GetEnvironmentVariable("OPENROUTER_KEY"),
+    builder.Configuration["OpenRouter:BaseUrl"] ?? "https://openrouter.ai/api/v1",
+    builder.Configuration["OpenRouter:Model"] ?? "openai/gpt-4o-mini",
+    builder.Configuration.GetValue("OpenRouter:TimeoutSeconds", 30)));
 builder.Services.AddScoped<CreateResidentialCustomerHandler>();
 builder.Services.AddScoped<GetResidentialCustomerHandler>();
 builder.Services.AddScoped<SearchResidentialCustomersHandler>();
+builder.Services.AddScoped<CountResidentialCustomersHandler>();
 builder.Services.AddScoped<UpdateResidentialCustomerHandler>();
 builder.Services.AddScoped<RetireResidentialCustomerHandler>();
 builder.Services.AddScoped<GetCentersHandler>();
 builder.Services.AddScoped<SearchNeighborhoodsHandler>();
+builder.Services.AddScoped<AssistantMessageHandler>();
+builder.Services.AddScoped<ConfirmAssistantActionHandler>();
 
 var app = builder.Build();
 

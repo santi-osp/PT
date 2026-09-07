@@ -7,12 +7,22 @@ public interface IResidentialCustomerRepository
     Task AddAsync(ResidentialCustomer customer, CancellationToken cancellationToken);
     Task<ResidentialCustomer?> GetAsync(Guid id, CancellationToken cancellationToken);
     Task<ResidentialCustomer?> GetForUpdateAsync(Guid id, CancellationToken cancellationToken);
-    Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(string? search, CustomerStatusFilter status, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(SearchResidentialCustomerCriteria criteria, CancellationToken cancellationToken);
+    Task<int> CountAsync(SearchResidentialCustomerCriteria criteria, CancellationToken cancellationToken);
     Task UpdateAsync(ResidentialCustomer customer, CancellationToken cancellationToken);
     Task RetireAsync(ResidentialCustomer customer, CancellationToken cancellationToken);
 }
 
 public enum CustomerStatusFilter { All, Active, Blocked }
+
+public sealed record SearchResidentialCustomerCriteria(
+    string? SearchText = null,
+    CustomerStatusFilter Status = CustomerStatusFilter.All,
+    Guid? NeighborhoodId = null,
+    Guid? CenterId = null,
+    short? Stratum = null,
+    Treatment? Treatment = null,
+    DocumentType? DocumentType = null);
 
 public sealed record NeighborhoodLookup(
     Guid Id,

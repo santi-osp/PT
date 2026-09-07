@@ -2,9 +2,10 @@ import { Component, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { ToastStack } from '../shared/toast-stack';
+import { AssistantChat } from '../assistant/assistant-chat';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastStack],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastStack, AssistantChat],
   template: `
     <a class="skip-link" href="#main-content">Saltar al contenido</a>
     <div class="app-shell">
@@ -28,6 +29,7 @@ import { ToastStack } from '../shared/toast-stack';
       </div>
     </div>
     <app-toast-stack />
+    <app-assistant-chat />
   `
 })
 export class AppShell {
