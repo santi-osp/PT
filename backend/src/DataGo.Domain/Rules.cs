@@ -1,0 +1,66 @@
+using System.Text.RegularExpressions;
+
+namespace DataGo.Domain;
+
+public static partial class NitValidator
+{
+    private static readonly int[] Weights = [41, 37, 29, 23, 19, 17, 13, 7, 3];
+
+    public static bool IsValid(string documentNumber, string? verificationDigit)
+    {
+        if (!NineDigits().IsMatch(documentNumber) || verificationDigit is null ||
+            verificationDigit.Length != 1 || !char.IsDigit(verificationDigit[0])) return false;
+
+        var sum = documentNumber.Select((digit, index) => (digit - '0') * Weights[index]).Sum();
+        var remainder = sum % 11;
+        var expected = remainder is 0 or 1 ? remainder : 11 - remainder;
+        return expected == verificationDigit[0] - '0';
+    }
+
+    [GeneratedRegex("^[0-9]{9}$")]
+    private static partial Regex NineDigits();
+}
+
+public sealed record ParsedName(string FullName, string FirstNames, string LastNames);
+
+public static class NameParser
+{
+    // Assumption for the exercise: for four or more tokens, the last two are surnames.
+    public static ParsedName Parse(string legalName)
+    {
+        var tokens = legalName.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (tokens.Length == 0) throw new DomainValidationException("El nombre legal extendido es obligatorio");
+
+        var firstCount = tokens.Length switch { 1 => 1, 2 => 1, 3 => 2, _ => tokens.Length - 2 };
+        var first = tokens[..firstCount];
+        var last = tokens[firstCount..];
+        return new(string.Join(' ', tokens), string.Join(", ", first), string.Join(", ", last));
+    }
+}
+
+internal static class CustomerInputRules
+{
+    private static readonly HashSet<string> DummyValues = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "test", "prueba", "dummy", "n/a", "na", "no aplica", "sin dato", "sin información",
+        "000000", "0000000", "1111111", "1234567", "1234567890", "correo@correo.com", "test@test.com"
+    };
+
+    public static string Required(string? value, string field)
+    {
+        var normalized = Normalize(value);
+        if (normalized.Length == 0) throw new DomainValidationException($"{field} es obligatorio");
+        if (DummyValues.Contains(normalized)) throw new DomainValidationException($"{field} contiene un valor no permitido");
+        return normalized;
+    }
+
+    public static string? Optional(string? value, string field)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var normalized = Normalize(value);
+        if (DummyValues.Contains(normalized)) throw new DomainValidationException($"{field} contiene un valor no permitido");
+        return normalized;
+    }
+
+    private static string Normalize(string? value) => Regex.Replace(value?.Trim() ?? "", @"\s+", " ");
+}

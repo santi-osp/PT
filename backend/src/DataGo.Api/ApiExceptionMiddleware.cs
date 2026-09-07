@@ -1,0 +1,34 @@
+using DataGo.Application;
+using DataGo.Domain;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace DataGo.Api;
+
+public sealed class ApiExceptionMiddleware(RequestDelegate next, ILogger<ApiExceptionMiddleware> logger)
+{
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await next(context);
+        }
+        catch (Exception exception)
+        {
+            var (status, title, detail) = exception switch
+            {
+                DomainValidationException => (StatusCodes.Status400BadRequest, "Error de validación", exception.Message),
+                NotFoundException => (StatusCodes.Status404NotFound, "Recurso no encontrado", exception.Message),
+                ConflictException => (StatusCodes.Status409Conflict, "Conflicto", exception.Message),
+                DbUpdateException => (StatusCodes.Status409Conflict, "Conflicto de persistencia", "El código o documento ya existe"),
+                _ => (StatusCodes.Status500InternalServerError, "Error interno", "Ocurrió un error inesperado")
+            };
+            if (status == 500) logger.LogError(exception, "Unhandled request error");
+            context.Response.StatusCode = status;
+            await context.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Status = status, Title = title, Detail = detail, Instance = context.Request.Path
+            });
+        }
+    }
+}
