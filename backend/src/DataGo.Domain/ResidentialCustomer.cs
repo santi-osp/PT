@@ -72,4 +72,56 @@ public sealed class ResidentialCustomer
         customer.Address = createAddress(customer.Id) ?? throw new DomainValidationException("La dirección es obligatoria");
         return customer;
     }
+
+    public void Update(string businessName, string? firstNames, string? lastNames, string? phone,
+        string? phoneExtension, string? mobilePhone, string? email, short stratum, Guid centerId,
+        Action<CustomerAddress> updateAddress, DateTimeOffset now)
+    {
+        if (IsBlocked) throw new DomainConflictException("El cliente está bloqueado y no puede modificarse.");
+
+        var normalizedPhone = CustomerInputRules.Optional(phone, "El teléfono");
+        var normalizedMobile = CustomerInputRules.Optional(mobilePhone, "El celular");
+        if (normalizedPhone is null && normalizedMobile is null)
+            throw new DomainValidationException("Debe indicar teléfono o celular");
+        var normalizedEmail = CustomerInputRules.Optional(email, "El email");
+        if (DocumentType == DocumentType.NIT && normalizedEmail is null)
+            throw new DomainValidationException("El email es obligatorio para NIT");
+        if (centerId == Guid.Empty) throw new DomainValidationException("El centro es obligatorio");
+        if (stratum is < 1 or > 6) throw new DomainValidationException("El estrato debe estar entre 1 y 6");
+
+        BusinessName = CustomerInputRules.Required(businessName, "La razón social");
+        if (Treatment == Treatment.Empresa)
+        {
+            var suppliedFirst = string.IsNullOrWhiteSpace(firstNames) ? null : CustomerInputRules.NameComponents(firstNames, "El nombre legal", true);
+            var suppliedLast = string.IsNullOrWhiteSpace(lastNames) ? null : CustomerInputRules.NameComponents(lastNames, "El nombre legal", true);
+            if (suppliedFirst is not null && suppliedLast is not null && !string.Equals(suppliedFirst, suppliedLast, StringComparison.OrdinalIgnoreCase))
+                throw new DomainValidationException("Para Empresa, FirstNames y LastNames deben contener el mismo nombre legal");
+            var legalName = suppliedFirst ?? suppliedLast ?? ExtendedLegalName;
+            legalName = CustomerInputRules.Required(legalName, "El nombre legal");
+            ExtendedLegalName = FullName = FirstNames = LastNames = legalName;
+        }
+        else
+        {
+            FirstNames = CustomerInputRules.NameComponents(firstNames, "Los nombres", true);
+            LastNames = CustomerInputRules.NameComponents(lastNames, "Los apellidos", false);
+            ExtendedLegalName = FullName = CustomerInputRules.JoinNameComponents(FirstNames, LastNames);
+        }
+
+        Phone = normalizedPhone;
+        PhoneExtension = CustomerInputRules.Optional(phoneExtension, "La extensión");
+        MobilePhone = normalizedMobile;
+        Email = normalizedEmail;
+        Stratum = stratum;
+        CenterId = centerId;
+        updateAddress(Address);
+        UpdatedAt = now;
+    }
+
+    public void Retire(DateTimeOffset now)
+    {
+        if (IsBlocked) throw new DomainConflictException("El cliente ya se encuentra bloqueado.");
+        IsBlocked = true;
+        BlockedAt = now;
+        UpdatedAt = now;
+    }
 }

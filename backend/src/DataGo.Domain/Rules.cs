@@ -62,5 +62,21 @@ internal static class CustomerInputRules
         return normalized;
     }
 
+    public static string NameComponents(string? value, string field, bool required)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            if (required) throw new DomainValidationException($"{field} es obligatorio");
+            return "";
+        }
+
+        var components = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (components.Length == 0 && required) throw new DomainValidationException($"{field} es obligatorio");
+        return string.Join(", ", components.Select(component => Required(component, field)));
+    }
+
+    public static string JoinNameComponents(params string[] values) => string.Join(' ', values
+        .SelectMany(value => value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)));
+
     private static string Normalize(string? value) => Regex.Replace(value?.Trim() ?? "", @"\s+", " ");
 }

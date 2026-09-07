@@ -6,8 +6,12 @@ public interface IResidentialCustomerRepository
 {
     Task AddAsync(ResidentialCustomer customer, CancellationToken cancellationToken);
     Task<ResidentialCustomer?> GetAsync(Guid id, CancellationToken cancellationToken);
-    Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(string? search, CancellationToken cancellationToken);
+    Task<ResidentialCustomer?> GetForUpdateAsync(Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(string? search, CustomerStatusFilter status, CancellationToken cancellationToken);
+    Task SaveChangesAsync(CancellationToken cancellationToken);
 }
+
+public enum CustomerStatusFilter { All, Active, Blocked }
 
 public interface ICenterRepository
 {

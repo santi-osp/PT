@@ -1,10 +1,11 @@
 # PROJECT_STATE
 
-- **Backend:** ASP.NET Core 10, Clean Architecture (`Domain <- Application <- Infrastructure/Api`), controllers and reusable application handlers.
-- **Frontend:** Not started; intentionally outside Goal 1.
-- **Database:** EF Core 10 + Npgsql/PostgreSQL. Real `InitialCreate` migration includes geographic catalogs, 44 Medellín demonstration neighborhoods, 20 fictitious centers, and 5 modern-channel conflicts. Configure `ConnectionStrings__DefaultConnection`; no production secret is committed.
-- **Deployment:** Not started; intentionally outside Goal 1.
-- **Endpoints:** `POST/GET /api/residential-customers`, `GET /api/residential-customers/{id}`, `GET /api/catalogs/neighborhoods`, `GET /api/catalogs/centers`, `GET /api/health`, `/swagger`.
-- **Tests:** 13 passing unit cases covering NIT, documented name splitting, contact/company creation rules, and modern-channel conflict.
-- **Known issues:** No accessible local PostgreSQL or Docker daemon was available, so migration application and DB-backed HTTP smoke tests remain for Neon/staging. The migration was generated and successfully rendered to PostgreSQL SQL.
-- **Next:** GOAL 2 — modificación + retiro + cierre backend.
+- **Backend:** COMPLETE. ASP.NET Core 10 Clean Architecture implementation and real persistence smoke are validated.
+- **Frontend:** Not started; intentionally outside Goal 2.
+- **Database:** NEON CONNECTED. EF Core 10 + Npgsql 10.0.3; `InitialCreate` is applied with controlled geographic/catalog/modern-channel seeds.
+- **CRUD:** CREATE, READ, SEARCH, UPDATE, and RETIRE implemented. Blocked customers remain visible and may be filtered with `status`.
+- **Endpoints:** POST/GET/PUT residential customers, PATCH retire, catalogs, health, and Swagger.
+- **Tests:** 18 passing focused domain/application cases; Neon smoke passed create/read/search/update/retire and negative conflict/not-found cases.
+- **Known issues:** None known for the Goal 2 backend scope.
+- **Deployment:** Not started; configuration is environment-driven and ready for a later Render goal.
+- **Next:** GOAL 3 — Angular UI + complete API integration.

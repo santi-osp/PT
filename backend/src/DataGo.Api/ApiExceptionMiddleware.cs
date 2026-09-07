@@ -18,6 +18,7 @@ public sealed class ApiExceptionMiddleware(RequestDelegate next, ILogger<ApiExce
             var (status, title, detail) = exception switch
             {
                 DomainValidationException => (StatusCodes.Status400BadRequest, "Error de validación", exception.Message),
+                DomainConflictException => (StatusCodes.Status409Conflict, "Conflicto", exception.Message),
                 NotFoundException => (StatusCodes.Status404NotFound, "Recurso no encontrado", exception.Message),
                 ConflictException => (StatusCodes.Status409Conflict, "Conflicto", exception.Message),
                 DbUpdateException => (StatusCodes.Status409Conflict, "Conflicto de persistencia", "El código o documento ya existe"),

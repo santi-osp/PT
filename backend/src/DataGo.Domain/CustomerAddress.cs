@@ -24,30 +24,46 @@ public sealed class CustomerAddress
         string? secondaryRoadNumber1, string? secondaryRoadLetter, string? secondaryRoadCardinality1,
         string? secondaryRoadNumber2, string? secondaryRoadCardinality2)
     {
+        var address = new CustomerAddress { Id = Guid.NewGuid(), CustomerId = customerId };
+        address.Update(neighborhoodId, isRural, ruralAddress, mainRoadType, mainRoadNumber, mainRoadLetter,
+            mainRoadCardinality, secondaryRoadNumber1, secondaryRoadLetter, secondaryRoadCardinality1,
+            secondaryRoadNumber2, secondaryRoadCardinality2);
+        return address;
+    }
+
+    public void Update(Guid neighborhoodId, bool isRural, string? ruralAddress,
+        string? mainRoadType, string? mainRoadNumber, string? mainRoadLetter, string? mainRoadCardinality,
+        string? secondaryRoadNumber1, string? secondaryRoadLetter, string? secondaryRoadCardinality1,
+        string? secondaryRoadNumber2, string? secondaryRoadCardinality2)
+    {
         if (neighborhoodId == Guid.Empty) throw new DomainValidationException("El barrio es obligatorio");
-        var address = new CustomerAddress { Id = Guid.NewGuid(), CustomerId = customerId, NeighborhoodId = neighborhoodId, IsRural = isRural };
+        NeighborhoodId = neighborhoodId;
+        IsRural = isRural;
         if (isRural)
         {
-            address.RuralAddress = CustomerInputRules.Required(ruralAddress, "La dirección rural");
-            address.FormattedAddress = address.RuralAddress;
-            return address;
+            RuralAddress = CustomerInputRules.Required(ruralAddress, "La dirección rural");
+            MainRoadType = MainRoadNumber = MainRoadLetter = MainRoadCardinality = null;
+            SecondaryRoadNumber1 = SecondaryRoadLetter = SecondaryRoadCardinality1 = null;
+            SecondaryRoadNumber2 = SecondaryRoadCardinality2 = null;
+            FormattedAddress = RuralAddress;
+            return;
         }
 
-        address.MainRoadType = CustomerInputRules.Required(mainRoadType, "El tipo de vía principal");
-        address.MainRoadNumber = CustomerInputRules.Required(mainRoadNumber, "El número de vía principal");
-        address.SecondaryRoadNumber1 = CustomerInputRules.Required(secondaryRoadNumber1, "El primer número de vía secundaria");
-        address.SecondaryRoadNumber2 = CustomerInputRules.Required(secondaryRoadNumber2, "El segundo número de vía secundaria");
-        address.MainRoadLetter = CustomerInputRules.Optional(mainRoadLetter, "La letra de vía principal");
-        address.MainRoadCardinality = CustomerInputRules.Optional(mainRoadCardinality, "La cardinalidad principal");
-        address.SecondaryRoadLetter = CustomerInputRules.Optional(secondaryRoadLetter, "La letra de vía secundaria");
-        address.SecondaryRoadCardinality1 = CustomerInputRules.Optional(secondaryRoadCardinality1, "La cardinalidad secundaria 1");
-        address.SecondaryRoadCardinality2 = CustomerInputRules.Optional(secondaryRoadCardinality2, "La cardinalidad secundaria 2");
-        address.FormattedAddress = string.Join(' ', new[]
+        RuralAddress = null;
+        MainRoadType = CustomerInputRules.Required(mainRoadType, "El tipo de vía principal");
+        MainRoadNumber = CustomerInputRules.Required(mainRoadNumber, "El número de vía principal");
+        SecondaryRoadNumber1 = CustomerInputRules.Required(secondaryRoadNumber1, "El primer número de vía secundaria");
+        SecondaryRoadNumber2 = CustomerInputRules.Required(secondaryRoadNumber2, "El segundo número de vía secundaria");
+        MainRoadLetter = CustomerInputRules.Optional(mainRoadLetter, "La letra de vía principal");
+        MainRoadCardinality = CustomerInputRules.Optional(mainRoadCardinality, "La cardinalidad principal");
+        SecondaryRoadLetter = CustomerInputRules.Optional(secondaryRoadLetter, "La letra de vía secundaria");
+        SecondaryRoadCardinality1 = CustomerInputRules.Optional(secondaryRoadCardinality1, "La cardinalidad secundaria 1");
+        SecondaryRoadCardinality2 = CustomerInputRules.Optional(secondaryRoadCardinality2, "La cardinalidad secundaria 2");
+        FormattedAddress = string.Join(' ', new[]
         {
-            address.MainRoadType, address.MainRoadNumber + address.MainRoadLetter, address.MainRoadCardinality,
-            "#", address.SecondaryRoadNumber1 + address.SecondaryRoadLetter, address.SecondaryRoadCardinality1,
-            "-", address.SecondaryRoadNumber2, address.SecondaryRoadCardinality2
+            MainRoadType, MainRoadNumber + MainRoadLetter, MainRoadCardinality,
+            "#", SecondaryRoadNumber1 + SecondaryRoadLetter, SecondaryRoadCardinality1,
+            "-", SecondaryRoadNumber2, SecondaryRoadCardinality2
         }.Where(x => !string.IsNullOrWhiteSpace(x)));
-        return address;
     }
 }

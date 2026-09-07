@@ -16,9 +16,19 @@ internal sealed class ResidentialCustomerRepository(DataGoDbContext dbContext) :
         dbContext.ResidentialCustomers.AsNoTracking().Include(x => x.Address)
             .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
-    public async Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(string? search, CancellationToken cancellationToken)
+    public Task<ResidentialCustomer?> GetForUpdateAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.ResidentialCustomers.Include(x => x.Address)
+            .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(string? search, CustomerStatusFilter status, CancellationToken cancellationToken)
     {
         var query = dbContext.ResidentialCustomers.AsNoTracking().Include(x => x.Address).AsQueryable();
+        query = status switch
+        {
+            CustomerStatusFilter.Active => query.Where(x => !x.IsBlocked),
+            CustomerStatusFilter.Blocked => query.Where(x => x.IsBlocked),
+            _ => query
+        };
         if (!string.IsNullOrWhiteSpace(search))
         {
             var pattern = $"%{search.Trim()}%";
@@ -28,6 +38,9 @@ internal sealed class ResidentialCustomerRepository(DataGoDbContext dbContext) :
         }
         return await query.OrderByDescending(x => x.CreatedAt).Take(100).ToListAsync(cancellationToken);
     }
+
+    public async Task SaveChangesAsync(CancellationToken cancellationToken) =>
+        await dbContext.SaveChangesAsync(cancellationToken);
 }
 
 internal sealed class CenterRepository(DataGoDbContext dbContext) : ICenterRepository

@@ -17,6 +17,8 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<CreateResidentialCustomerHandler>();
 builder.Services.AddScoped<GetResidentialCustomerHandler>();
 builder.Services.AddScoped<SearchResidentialCustomersHandler>();
+builder.Services.AddScoped<UpdateResidentialCustomerHandler>();
+builder.Services.AddScoped<RetireResidentialCustomerHandler>();
 builder.Services.AddScoped<GetCentersHandler>();
 builder.Services.AddScoped<SearchNeighborhoodsHandler>();
 
