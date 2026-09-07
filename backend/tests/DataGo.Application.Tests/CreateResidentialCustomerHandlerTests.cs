@@ -24,7 +24,8 @@ public sealed class CreateResidentialCustomerHandlerTests
         public Task<ResidentialCustomer?> GetAsync(Guid id, CancellationToken token) => Task.FromResult<ResidentialCustomer?>(null);
         public Task<ResidentialCustomer?> GetForUpdateAsync(Guid id, CancellationToken token) => Task.FromResult<ResidentialCustomer?>(null);
         public Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(string? search, CustomerStatusFilter status, CancellationToken token) => Task.FromResult<IReadOnlyList<ResidentialCustomer>>([]);
-        public Task SaveChangesAsync(CancellationToken token) => Task.CompletedTask;
+        public Task UpdateAsync(ResidentialCustomer customer, CancellationToken token) => Task.CompletedTask;
+        public Task RetireAsync(ResidentialCustomer customer, CancellationToken token) => Task.CompletedTask;
     }
     private sealed class Centers : ICenterRepository
     {

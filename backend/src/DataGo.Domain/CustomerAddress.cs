@@ -19,6 +19,29 @@ public sealed class CustomerAddress
     public string? SecondaryRoadCardinality2 { get; private set; }
     public string FormattedAddress { get; private set; } = "";
 
+    public static CustomerAddress Restore(Guid id, Guid customerId, Guid neighborhoodId, bool isRural,
+        string? ruralAddress, string? mainRoadType, string? mainRoadNumber, string? mainRoadLetter,
+        string? mainRoadCardinality, string? secondaryRoadNumber1, string? secondaryRoadLetter,
+        string? secondaryRoadCardinality1, string? secondaryRoadNumber2, string? secondaryRoadCardinality2,
+        string formattedAddress) => new()
+        {
+            Id = id,
+            CustomerId = customerId,
+            NeighborhoodId = neighborhoodId,
+            IsRural = isRural,
+            RuralAddress = ruralAddress,
+            MainRoadType = mainRoadType,
+            MainRoadNumber = mainRoadNumber,
+            MainRoadLetter = mainRoadLetter,
+            MainRoadCardinality = mainRoadCardinality,
+            SecondaryRoadNumber1 = secondaryRoadNumber1,
+            SecondaryRoadLetter = secondaryRoadLetter,
+            SecondaryRoadCardinality1 = secondaryRoadCardinality1,
+            SecondaryRoadNumber2 = secondaryRoadNumber2,
+            SecondaryRoadCardinality2 = secondaryRoadCardinality2,
+            FormattedAddress = formattedAddress
+        };
+
     public static CustomerAddress Create(Guid customerId, Guid neighborhoodId, bool isRural, string? ruralAddress,
         string? mainRoadType, string? mainRoadNumber, string? mainRoadLetter, string? mainRoadCardinality,
         string? secondaryRoadNumber1, string? secondaryRoadLetter, string? secondaryRoadCardinality1,

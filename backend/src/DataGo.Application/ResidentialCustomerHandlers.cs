@@ -80,7 +80,7 @@ public sealed class UpdateResidentialCustomerHandler(
                 address.MainRoadType, address.MainRoadNumber, address.MainRoadLetter, address.MainRoadCardinality,
                 address.SecondaryRoadNumber1, address.SecondaryRoadLetter, address.SecondaryRoadCardinality1,
                 address.SecondaryRoadNumber2, address.SecondaryRoadCardinality2), timeProvider.GetUtcNow());
-        await customers.SaveChangesAsync(cancellationToken);
+        await customers.UpdateAsync(customer, cancellationToken);
         return ResidentialCustomerResponse.From(customer);
     }
 }
@@ -92,7 +92,7 @@ public sealed class RetireResidentialCustomerHandler(IResidentialCustomerReposit
         var customer = await customers.GetForUpdateAsync(id, cancellationToken)
             ?? throw new NotFoundException("El cliente a retirar no existe");
         customer.Retire(timeProvider.GetUtcNow());
-        await customers.SaveChangesAsync(cancellationToken);
+        await customers.RetireAsync(customer, cancellationToken);
         return ResidentialCustomerResponse.From(customer);
     }
 }

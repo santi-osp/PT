@@ -30,6 +30,39 @@ public sealed class ResidentialCustomer
     public DateTimeOffset UpdatedAt { get; private set; }
     public CustomerAddress Address { get; private set; } = null!;
 
+    public static ResidentialCustomer Restore(Guid id, string code, Treatment treatment, string businessName,
+        string extendedLegalName, string fullName, string firstNames, string lastNames, string? phone,
+        string? phoneExtension, string? mobilePhone, string? email, DocumentType documentType,
+        string documentNumber, string? verificationDigit, TaxClass taxClass, string paymentCondition,
+        short stratum, Guid centerId, bool isBlocked, DateTimeOffset? blockedAt, DateTimeOffset createdAt,
+        DateTimeOffset updatedAt, CustomerAddress address) => new()
+        {
+            Id = id,
+            Code = code,
+            Treatment = treatment,
+            BusinessName = businessName,
+            ExtendedLegalName = extendedLegalName,
+            FullName = fullName,
+            FirstNames = firstNames,
+            LastNames = lastNames,
+            Phone = phone,
+            PhoneExtension = phoneExtension,
+            MobilePhone = mobilePhone,
+            Email = email,
+            DocumentType = documentType,
+            DocumentNumber = documentNumber,
+            VerificationDigit = verificationDigit,
+            TaxClass = taxClass,
+            PaymentCondition = paymentCondition,
+            Stratum = stratum,
+            CenterId = centerId,
+            IsBlocked = isBlocked,
+            BlockedAt = blockedAt,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt,
+            Address = address
+        };
+
     public static ResidentialCustomer Create(string code, Treatment treatment, string businessName, string extendedLegalName,
         string? phone, string? phoneExtension, string? mobilePhone, string? email, DocumentType documentType,
         string documentNumber, string? verificationDigit, short stratum, Guid centerId, Func<Guid, CustomerAddress> createAddress,

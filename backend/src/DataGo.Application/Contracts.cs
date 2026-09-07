@@ -8,7 +8,8 @@ public interface IResidentialCustomerRepository
     Task<ResidentialCustomer?> GetAsync(Guid id, CancellationToken cancellationToken);
     Task<ResidentialCustomer?> GetForUpdateAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<ResidentialCustomer>> SearchAsync(string? search, CustomerStatusFilter status, CancellationToken cancellationToken);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
+    Task UpdateAsync(ResidentialCustomer customer, CancellationToken cancellationToken);
+    Task RetireAsync(ResidentialCustomer customer, CancellationToken cancellationToken);
 }
 
 public enum CustomerStatusFilter { All, Active, Blocked }

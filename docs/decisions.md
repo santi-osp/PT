@@ -9,3 +9,4 @@
 7. **Company update:** one legal company name is retained. If both `FirstNames` and `LastNames` are supplied they must match; either single value becomes the legal name, and all four name fields are synchronized.
 8. **Future assistant:** AI reuses Application use cases after draft, validation, and user confirmation; it never accesses EF/database directly.
 9. **External secrets:** local credentials live in ASP.NET user-secrets and deployment credentials will use `ConnectionStrings__DefaultConnection`; real credentials are never tracked.
+10. **Stored-routine-based persistence:** Infrastructure executes version-controlled PostgreSQL procedures for atomic commands and functions for rowsets. This centralizes enterprise-style persistence and database atomicity without duplicating business rules, which remain authoritative in Domain/Application.

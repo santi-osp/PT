@@ -5,7 +5,7 @@ DataGo is a technical-exercise monorepo for managing residential customers. The 
 ## Stack and structure
 
 - ASP.NET Core 10, C# 14, Swagger/OpenAPI
-- EF Core 10.0.8 and Npgsql provider 10.0.3
+- EF Core 10.0.8, Npgsql 10.0.3, and PostgreSQL stored procedures/functions
 - PostgreSQL (Neon for the shared development database)
 - xUnit focused domain/application tests
 
@@ -21,6 +21,8 @@ frontend/                 # Goal 3
 ```
 
 See [architecture](docs/architecture.md), [database model](docs/database.md), and [decision log](docs/decisions.md).
+
+Data persistence is executed through version-controlled PostgreSQL stored routines while business rules remain in Domain/Application.
 
 ## Local configuration
 

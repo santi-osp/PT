@@ -13,12 +13,13 @@ flowchart LR
     Controller --> UseCase[Application Use Case]
     UseCase --> Domain
     UseCase --> Port[Repository abstraction]
-    Port --> EF[Infrastructure / EF Core]
-    EF --> Neon[(Neon PostgreSQL)]
+    Port --> Infrastructure
+    Infrastructure --> Routines[PostgreSQL Stored Routines]
+    Routines --> Neon[(Neon PostgreSQL)]
 ```
 
-Tracked aggregates are loaded for update/retirement, changed through domain methods, and saved once. Queries use no-tracking projections of the aggregate. Logical retirement preserves queryability and historical state.
+Infrastructure executes Npgsql commands only after Application/Domain validation. Procedures atomically persist commands and table-returning functions hydrate aggregates in one read round-trip. EF Core remains responsible for mappings and reproducible migrations. Logical retirement preserves queryability and historical state.
 
 ## Future AI Assistant
 
-An assistant will call the same Application use cases as Angular; it will not call controllers, EF, SQL, or the database directly. Mutations—especially update and retirement—will follow `Draft -> Validate -> User Confirmation -> Execute Use Case`. The LLM proposes intent; domain/application code remains the business authority.
+An assistant will call the same Application use cases as Angular: `Assistant -> Application -> Repository -> Stored Routine`. It will not call controllers, routines, EF, SQL, or the database directly. Mutations—especially update and retirement—will follow `Draft -> Validate -> User Confirmation -> Execute Use Case`. The LLM proposes intent; domain/application code remains the business authority.
