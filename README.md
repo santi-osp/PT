@@ -1,93 +1,147 @@
-# DataGo
+<p align="center">
+  <img src="docs/images/banner.svg" alt="DataGo Enterprise Banner" width="100%">
+</p>
 
-DataGo is a technical-exercise monorepo for managing residential customers. The backend supports creation, read, search, update, and logical retirement while keeping business rules independent from HTTP and PostgreSQL.
+<p align="center">
+  <img src="https://img.shields.io/badge/.NET%20Core-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10">
+  <img src="https://img.shields.io/badge/C%23-14-239120?style=for-the-badge&logo=csharp&logoColor=white" alt="C# 14">
+  <img src="https://img.shields.io/badge/PostgreSQL-Neon%20Serverless-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Angular-21%20Standalone-DD0031?style=for-the-badge&logo=angular&logoColor=white" alt="Angular 21">
+  <img src="https://img.shields.io/badge/Architecture-Clean%20%2F%20DDD-00D4B2?style=for-the-badge" alt="Clean Architecture">
+  <img src="https://img.shields.io/badge/Testing-xUnit-512BD4?style=for-the-badge" alt="xUnit">
+</p>
 
-## Stack and structure
+<p align="center">
+  <img src="docs/images/divider.svg" width="100%">
+</p>
 
-- ASP.NET Core 10, C# 14, Swagger/OpenAPI
-- EF Core 10.0.8, Npgsql 10.0.3, and PostgreSQL stored procedures/functions
-- PostgreSQL (Neon for the shared development database)
-- Angular 21 standalone frontend with Reactive Forms
-- xUnit focused domain/application tests
+## 🏢 Visión General del Proyecto
 
-```text
-backend/
-  src/DataGo.Domain
-  src/DataGo.Application
-  src/DataGo.Infrastructure
-  src/DataGo.Api
-  tests/
-docs/
-frontend/                 # Angular operations UI
+**DataGo (PT Monorepo)** es una solución empresarial diseñada bajo los principios de **Clean Architecture** y **Domain-Driven Design (DDD)** para la gestión, auditoría y control del ciclo de vida de clientes residenciales y contratos de servicios.
+
+La solución desacopla estrictamente las reglas de negocio de la infraestructura y el transporte HTTP. La persistencia relacional se ejecuta a través de rutinas almacenadas (*PostgreSQL Stored Procedures & Functions*) versionadas bajo código, complementadas con **Entity Framework Core 10** y **Npgsql**, mientras que el frontend operativo está construido con **Angular 21** empleando formularios reactivos y componentes independientes.
+
+---
+
+## 🏛️ Arquitectura por Capas (Clean Architecture)
+
+```mermaid
+graph TD
+    UI[Angular 21 Operations UI] -->|HTTP REST JSON| API[DataGo.Api - ASP.NET Core 10]
+    API --> APP[DataGo.Application - CQRS / Casos de Uso]
+    APP --> DOM[DataGo.Domain - Entidades & Reglas de Negocio]
+    INFRA[DataGo.Infrastructure - EF Core / Npgsql] -->|Implementa Interfaces| APP
+    INFRA --> DOM
+    INFRA --> DB[(PostgreSQL en Neon Cloud - Stored Procedures)]
 ```
 
-See [architecture](docs/architecture.md), [database model](docs/database.md), and [decision log](docs/decisions.md).
+### Descripción de Capas:
+1. **`DataGo.Domain`:** Entidades nucleares, Value Objects, enumeraciones de estado y validaciones invariantes puras (sin dependencias externas).
+2. **`DataGo.Application`:** Orquestación de casos de uso (creación, búsqueda, actualización y retiro lógico de clientes residenciales).
+3. **`DataGo.Infrastructure`:** Implementación de persistencia relacional, mapeo de funciones PostgreSQL mediante EF Core / Npgsql y logging estructurado.
+4. **`DataGo.Api`:** Controladores RESTful, middleware global de excepciones, inyección de dependencias y contratos OpenAPI / Swagger.
+5. **`frontend/`:** Interfaz de usuario construida en Angular 21 con Reactive Forms y validación asíncrona.
 
-Data persistence is executed through version-controlled PostgreSQL stored routines while business rules remain in Domain/Application.
+---
 
-## Local configuration
+## 💾 Persistencia & Rutinas Almacenadas en PostgreSQL
 
-The API reads `ConnectionStrings:DefaultConnection` through `IConfiguration`. The API project already has `UserSecretsId`; from the repository root, store a local PostgreSQL/Neon connection string with:
+A diferencia de los enfoques ORM monolíticos convencionales, DataGo versiona sus rutinas de base de datos en `docs/stored-routines/`:
+- **Creación Segura:** Inserción transaccional con validación de unicidad de documento de identidad.
+- **Búsqueda Avanzada:** Consultas optimizadas con paginación y filtros multi-campo.
+- **Retiro Lógico:** Inactivación con sellado de fecha y motivo sin pérdida de historial.
 
+Documentación técnica detallada:
+- [Especificación de Arquitectura](docs/architecture.md)
+- [Modelo de Base de Datos y Diccionario](docs/database.md)
+- [Registro de Decisiones Arquitectónicas (ADR)](docs/decisions.md)
+
+---
+
+## 🚀 Configuración y Puesta en Marcha
+
+### Prerrequisitos
+- **.NET SDK:** `10.0.x`
+- **Node.js:** Versión 20.x o 22.x LTS
+- **PostgreSQL / Neon Database:** Instancia accesible
+
+### 1. Configurar Secretos de Usuario (.NET User Secrets)
+El backend utiliza `dotnet user-secrets` para aislar cadenas de conexión sin exponer credenciales:
 ```powershell
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<YOUR_POSTGRESQL_CONNECTION_STRING>" --project .\backend\src\DataGo.Api\DataGo.Api.csproj
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=<host>;Port=5432;Database=<database>;Username=<user>;Password=<password>;SSL Mode=Require" --project .\backend\src\DataGo.Api\DataGo.Api.csproj
 ```
 
-Npgsql uses keyword/value connection strings. In Neon, select its **.NET** connection-string format. If only a PostgreSQL URI is available, map its host, port, database, user, and password to:
-
-```text
-Host=<host>;Port=<port>;Database=<database>;Username=<user>;Password=<password>;SSL Mode=Require
-```
-
-Keep the password only in user-secrets. A later production deployment will set `ConnectionStrings__DefaultConnection` as an environment variable.
-
-## Build, migrate, and run
-
-From the repository root:
-
+### 2. Compilar la Solución y Aplicar Migraciones
 ```powershell
+# Restaurar y compilar
 dotnet restore .\backend\DataGo.sln
 dotnet build .\backend\DataGo.sln --no-restore
+
+# Aplicar migraciones / rutinas a la base de datos
 $env:ASPNETCORE_ENVIRONMENT = "Development"
 dotnet ef database update --project .\backend\src\DataGo.Infrastructure\DataGo.Infrastructure.csproj --startup-project .\backend\src\DataGo.Api\DataGo.Api.csproj
-dotnet run --project .\backend\src\DataGo.Api\DataGo.Api.csproj
 ```
 
-Swagger UI is available at `/swagger`; health is available at `/api/health`.
+### 3. Iniciar el Backend API
+```powershell
+dotnet run --project .\backend\src\DataGo.Api\DataGo.Api.csproj
+```
+- **Swagger UI:** `http://localhost:5000/swagger`
+- **Health Check:** `http://localhost:5000/api/health`
 
-## Run the full stack
+### 4. Iniciar el Frontend (Angular 21)
+En una segunda terminal:
+```powershell
+cd frontend
+npm install
+npm run start
+```
+La aplicación web estará disponible en `http://localhost:4200`.
 
-Use two terminals from the repository root. The Neon connection remains in .NET user-secrets.
+---
+
+## 🧪 Pruebas Unitarias y de Integración
 
 ```powershell
-# Terminal 1 — API at http://localhost:5124
-dotnet run --project .\backend\src\DataGo.Api\DataGo.Api.csproj
-
-# Terminal 2 — Angular at http://localhost:4200
-cd .\frontend
-npm install
-npm start
+# Ejecutar suite de pruebas con xUnit
+dotnet test .\backend\DataGo.sln --logger "console;verbosity=normal"
 ```
 
-The development frontend targets `http://localhost:5124/api`. Production uses the same-origin `/api` placeholder so Goal 4 can inject the deployed API route without embedding a fictitious hostname.
+---
 
-Build the frontend with `npm run build` from `frontend/`.
+## 📁 Estructura del Monorepo
 
-## Endpoints
+```text
+PT/
+├── backend/
+│   ├── src/
+│   │   ├── DataGo.Domain/           # Reglas de negocio e invariantes
+│   │   ├── DataGo.Application/      # Casos de uso y DTOs
+│   │   ├── DataGo.Infrastructure/   # Npgsql, EF Core y Stored Procedures
+│   │   └── DataGo.Api/              # Controladores REST y Swagger
+│   ├── tests/                       # Suite de pruebas automatizadas xUnit
+│   └── DataGo.sln
+├── docs/
+│   ├── images/
+│   │   ├── banner.svg               # Hero banner vectorial
+│   │   └── divider.svg              # Separador decorativo
+│   ├── stored-routines/             # Scripts SQL de rutinas almacenadas
+│   ├── architecture.md              # Blueprint arquitectónico
+│   └── database.md                  # Esquema relacional
+├── frontend/                        # Cliente Angular 21 Standalone
+└── README.md
+```
 
-| Method | Route | Purpose |
-|---|---|---|
-| POST | `/api/residential-customers` | Create |
-| GET | `/api/residential-customers?search=&status=all` | Search/list; status accepts `all`, `active`, `blocked` |
-| GET | `/api/residential-customers/{id}` | Detail |
-| PUT | `/api/residential-customers/{id}` | Update editable fields |
-| PATCH | `/api/residential-customers/{id}/retire` | Logical retirement |
-| GET | `/api/catalogs/neighborhoods?query=` | Neighborhood catalog |
-| GET | `/api/catalogs/centers` | Active center catalog |
-| GET | `/api/health` | Process health |
+---
 
-## Assumptions and demonstration data
+## 👨‍💻 Autor y Contacto
 
-Retired customers remain visible and include `warning: "Cliente bloqueado"`. A retired customer cannot be updated or retired again. `BusinessName` is independent from the legal name. Company-name update behavior is documented in the decision log.
+Desarrollado por **Santiago Ospina Arango**  
+- **GitHub:** [@santi-osp](https://github.com/santi-osp)  
+- **Especialidad:** .NET Core / C# · Clean Architecture · Angular Enterprise
 
-`InitialCreate` seeds Colombia/Antioquia/Medellín, eight transport zones, 44 demonstration neighborhoods, 20 fictitious centers, and five synthetic modern-channel documents. These are migration-controlled demonstration records, not official commercial or cartographic data.
+---
+
+<p align="center">
+  <sub>DataGo Enterprise · Construido con estándares de calidad de software y arquitectura limpia.</sub>
+</p>
